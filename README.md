@@ -1,12 +1,14 @@
 # Force Delete - Context Menu
 
-<img width="1179" height="706" alt="image" src="https://github.com/user-attachments/assets/6d21aacf-9c9d-4d03-842c-026eb91924a1" />
+Adds a **Force Delete** option to the Windows right-click context menu that can forcefully and instantly delete files and folders — even if they are locked by other processes, owned by SYSTEM, or otherwise undeletable.
 
-<img width="333" height="605" alt="image" src="https://github.com/user-attachments/assets/02328cfb-7fec-42a3-b9f2-898400f7a6c6" />
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/02328cfb-7fec-42a3-b9f2-898400f7a6c6" alt="Force Delete in Context Menu" height="380" />
+  &nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/6d21aacf-9c9d-4d03-842c-026eb91924a1" alt="Force Delete Installer" height="380" />
+</div>
 
-Adds a **"Force Delete"** option to the Windows right-click context menu that can forcefully delete files and folders — even if they're locked by other processes, owned by SYSTEM, or otherwise undeletable.
-
-## ✨ Features
+## Features
 
 - **Instant deletion** of files and locked folders without scheduling or nagging
 - **Robocopy Mirror Purge** engine to obliterate stubborn, corrupted, or deep folders instantly
@@ -16,9 +18,9 @@ Adds a **"Force Delete"** option to the Windows right-click context menu that ca
 - **Single confirmation prompt** — confirms once, then deletes immediately without secondary prompts
 - **Windows 11 support** — option to enable classic context menu so the entry appears directly
 - **Clean install/uninstall** — removes old broken entries from previous versions
-- **No dependencies** — pure PowerShell, no Python or compiled executables needed
+- **No dependencies** — pure PowerShell, no Python or external runtimes needed
 
-## 🚀 Installation & Usage
+## Installation & Usage
 
 ### Option 1: Standalone Single Executable (From GitHub Releases)
 - Download **`Install-ForceDelete.exe`** from the latest release.
@@ -35,7 +37,7 @@ Adds a **"Force Delete"** option to the Windows right-click context menu that ca
    - Double-click **`Uninstall_Force-context-menu.bat`**.
    - Removes all context menu entries cleanly.
 
-## 🛠️ Building Standalone Executables
+## Building Standalone Executables
 
 To build the standalone `.exe` packages locally:
 ```powershell
@@ -51,13 +53,13 @@ This generates the following files in the `dist/` directory:
 
 An automated GitHub Actions workflow (`.github/workflows/release.yml`) builds and releases these assets automatically on every push or manual trigger.
 
-## 🪟 Windows 11 Note
+## Windows 11 Note
 
-On Windows 11, custom context menu entries appear under **"Show more options"** by default. During installation, you'll be asked if you want to enable the classic full context menu, which makes "Force Delete" appear directly on right-click.
+On Windows 11, custom context menu entries appear under **"Show more options"** by default. During installation, you will be asked if you want to enable the classic full context menu, which makes "Force Delete" appear directly on right-click.
 
 You can revert this change at any time using the uninstall script.
 
-## ⚡ How It Works
+## How It Works
 
 When you click "Force Delete":
 
@@ -72,11 +74,10 @@ When you click "Force Delete":
    - Fully elevated `gsudo` wipe (if installed)
 6. **Deletes immediately** — no reboot scheduling dialogs!
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 **Use at your own risk!** This tool can delete system files and files locked by critical processes. Be careful what you force-delete — this action cannot be undone.
 
-## 📝 Upgrading from Old Version
+## Upgrading from Old Version
 
 If you had the old Python-based "Force Delete" installed (the one that no longer works), the install script will **automatically remove the old broken entries** before adding the new ones. No manual cleanup needed!
-
