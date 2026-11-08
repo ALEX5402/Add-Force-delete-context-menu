@@ -24,8 +24,8 @@ Adds a **Force Delete** option to the Windows right-click context menu that can 
 
 ### Option 1: All-in-One Single Executable (Recommended)
 - Download **`ForceDelete-Setup.exe`** from the latest release.
-- Double-click to install. It is a completely self-contained single executable that automatically detects your architecture (`x64`, `ARM64`, or `x86`), deploys the native binary to `C:\Program Files\ForceDelete`, and sets up the context menu with the UAC shield.
-- To uninstall, run **`Uninstall-ForceDelete.exe`** (or uninstall from Windows Settings > Installed Apps).
+- Double-click to install. It is a completely self-contained single executable — `force_delete.ps1`, `uninstall.reg`, `clean_old_entries.reg` and `Uninstall-ForceDelete.exe` are all embedded inside it, so you don't need to download anything else. It deploys those files to `C:\Program Files\ForceDelete` and sets up the context menu with the UAC shield, exactly like `Install_Add-Force-context-menu.bat` does.
+- To uninstall, run **`Uninstall-ForceDelete.exe`** (also deployed to `C:\Program Files\ForceDelete` by the installer, or uninstall from Windows Settings > Installed Apps). It is likewise self-contained — the registry cleanup files are embedded inside it.
 
 ### Option 2: Script / Portable Mode (From Source)
 1. **Install**:
@@ -43,13 +43,9 @@ To build the standalone `.exe` packages locally:
 ```powershell
 .\build.ps1
 ```
-This generates the following files in the `dist/` directory:
-- `ForceDelete-Setup.exe` (All-in-one single-file installer bundling all binaries and tools)
-- `ForceDelete-Package.zip` (Complete archive of all executables and scripts)
-- `ForceDelete-x64.exe` (Standalone 64-bit binary)
-- `ForceDelete-x86.exe` (Standalone 32-bit binary)
-- `ForceDelete-arm64.exe` (Standalone ARM64 binary)
-- `Uninstall-ForceDelete.exe` (Single-file self-contained uninstaller)
+This generates exactly 2 files in the `dist/` directory, both fully self-contained — no other downloads needed:
+- `ForceDelete-Setup.exe` (All-in-one single-file installer; embeds `force_delete.ps1`, `uninstall.reg`, `clean_old_entries.reg` and `Uninstall-ForceDelete.exe`)
+- `Uninstall-ForceDelete.exe` (Single-file self-contained uninstaller; embeds `uninstall.reg` and `clean_old_entries.reg`)
 
 An automated GitHub Actions workflow (`.github/workflows/release.yml`) builds and releases these assets automatically on every push or manual trigger.
 

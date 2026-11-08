@@ -123,6 +123,12 @@ $slashQ = '\' + $q
 # powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\path\force_delete.ps1" "%1"
 $regCommandLine = '@=' + $q + 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ' + $slashQ + $escapedScript + $slashQ + ' ' + $slashQ + '%1' + $slashQ + $q
 
+# Windows Settings > Installed Apps entry, pointing at the .bat uninstaller (same folder)
+$uninstallScript = Join-Path $scriptDir "uninstall.ps1"
+$escapedUninstallScript = $uninstallScript.Replace('\', '\\')
+$uninstallCommandLine = '@=' + $q + 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ' + $slashQ + $escapedUninstallScript + $slashQ + $q
+$escapedScriptDir = $scriptDir.Replace('\', '\\')
+
 $regLines = @(
     'Windows Registry Editor Version 5.00',
     '',
@@ -143,7 +149,18 @@ $regLines = @(
     ($q + 'Position' + $q + '=' + $q + 'bottom' + $q),
     '',
     '[HKEY_LOCAL_MACHINE\Software\Classes\Directory\shell\ForceDelete\command]',
-    $regCommandLine
+    $regCommandLine,
+    '',
+    '[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\ForceDelete]',
+    ('@=' + $q + 'Force Delete Context Menu' + $q),
+    ($q + 'DisplayName' + $q + '=' + $q + 'Force Delete Context Menu' + $q),
+    ($q + 'DisplayVersion' + $q + '=' + $q + '1.0.0' + $q),
+    ($q + 'Publisher' + $q + '=' + $q + 'alex5402' + $q),
+    ($q + 'DisplayIcon' + $q + '=' + $q + 'imageres.dll,-78' + $q),
+    ($q + 'UninstallString' + $q + '=' + $uninstallCommandLine),
+    ($q + 'InstallLocation' + $q + '=' + $q + $escapedScriptDir + $q),
+    ($q + 'NoModify' + $q + '=dword:00000001'),
+    ($q + 'NoRepair' + $q + '=dword:00000001')
 )
 
 $tempRegPath = Join-Path $env:TEMP ("fd_install_" + [Guid]::NewGuid().ToString("N") + ".reg")

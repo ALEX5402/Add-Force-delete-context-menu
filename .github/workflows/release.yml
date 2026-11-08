@@ -32,18 +32,27 @@ jobs:
           Write-Host "Generated Version: $dateVersion"
           Write-Host "Generated Tag: $tagName"
 
-      # Step 2: Build all executables using PS2EXE (x64, x86, arm64, installer, uninstaller)
+      # Step 2: Build the 2 self-contained executables using PS2EXE (installer + uninstaller)
       - name: Build Executables with PS2EXE
         shell: powershell
         run: |
           Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           .\build.ps1
 
-      # Step 3: Verify dist directory contents
+      # Step 3: Verify only the 2 release executables exist (no x64/x86/arm64 deleter or zip)
       - name: Verify Built Assets
         shell: pwsh
         run: |
+          $expected = @('ForceDelete-Setup.exe', 'Uninstall-ForceDelete.exe') | Sort-Object
+          $actual = Get-ChildItem -Path .\dist -File | Select-Object -ExpandProperty Name | Sort-Object
           Get-ChildItem -Path .\dist | Format-Table -AutoSize Name, Length
+          if (Compare-Object $actual $expected) {
+            throw "Release assets must be exactly: $($expected -join ', '). Found: $($actual -join ', ')"
+          }
+          $banned = Get-ChildItem -Path .\dist -Include '*x64*', '*x86*', '*arm64*', '*.zip' -Recurse
+          if ($banned) {
+            throw "Banned release artifact(s) found: $($banned.Name -join ', ')"
+          }
 
       # Step 4: Create GitHub Release and Upload Assets
       - name: Create Release
@@ -57,24 +66,15 @@ jobs:
 
             Windows context menu utility that forcefully and instantly deletes locked, in-use, or undeletable files and folders. Includes the native Windows UAC security shield icon.
 
-            ### All-in-One Single Executable (Recommended):
-            - **`ForceDelete-Setup.exe`** - Single self-contained executable containing all architecture binaries (x64, x86, ARM64), the uninstaller, and supporting tools. Automatically detects your system architecture, installs to Program Files, and registers the context menu with the security shield icon.
-
-            ### Portable / Standalone Assets:
-            - **`ForceDelete-Package.zip`** - Complete archive containing all compiled executables, scripts, and registry files.
-            - **`ForceDelete-x64.exe`** - Standalone 64-bit binary for manual CLI / portable use.
-            - **`ForceDelete-arm64.exe`** - Standalone ARM64 binary for Windows on ARM (Copilot+ PCs, Surface Pro X, etc.).
-            - **`ForceDelete-x86.exe`** - Standalone 32-bit binary for 32-bit Windows systems.
-            - **`Uninstall-ForceDelete.exe`** - Standalone uninstaller.
+            ### Self-Contained Executables (no other downloads needed):
+            - **`ForceDelete-Setup.exe`** - Single self-contained installer. `force_delete.ps1`, `uninstall.reg`, `clean_old_entries.reg` and `Uninstall-ForceDelete.exe` are all embedded inside it. Installs to Program Files and registers the context menu with the security shield icon — the same result as running `Install_Add-Force-context-menu.bat`.
+            - **`Uninstall-ForceDelete.exe`** - Single self-contained uninstaller with `uninstall.reg` / `clean_old_entries.reg` embedded. Removes all context menu entries and the Program Files folder — the same result as running `Uninstall_Force-context-menu.bat`.
 
             ### Quick Start:
             1. Download and run **`ForceDelete-Setup.exe`** as Administrator.
             2. Choose your Windows 11 context menu style (Classic or Modern).
             3. Right-click any file or folder and click **Force Delete**!
+            4. To remove it later, run **`Uninstall-ForceDelete.exe`** (or uninstall from Windows Settings > Installed Apps).
           files: |
             dist/ForceDelete-Setup.exe
-            dist/ForceDelete-Package.zip
-            dist/ForceDelete-x64.exe
-            dist/ForceDelete-arm64.exe
-            dist/ForceDelete-x86.exe
             dist/Uninstall-ForceDelete.exe

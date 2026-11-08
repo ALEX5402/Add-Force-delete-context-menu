@@ -84,7 +84,10 @@ $keysToRemove = @(
     "HKLM\Software\Classes\*\shell\Force_Delete",
     "HKLM\Software\Classes\Directory\shell\Force_Delete",
     "HKCU\Software\Classes\*\shell\Force_Delete",
-    "HKCU\Software\Classes\Directory\shell\Force_Delete"
+    "HKCU\Software\Classes\Directory\shell\Force_Delete",
+
+    # Windows Settings > Installed Apps entry
+    "HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\ForceDelete"
 )
 
 $removedCount = 0
