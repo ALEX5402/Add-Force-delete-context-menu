@@ -72,7 +72,7 @@ jobs:
 
             ### Quick Start:
             1. Download and run **`ForceDelete-Setup.exe`** as Administrator.
-            2. Choose your Windows 11 context menu style (Classic or Modern).
+            2. On Windows 11, pick [1] Classic (Force Delete shows directly on right-click) or [2] Modern (under "Show more options").
             3. Right-click any file or folder and click **Force Delete**!
             4. To remove it later, run **`Uninstall-ForceDelete.exe`** (or uninstall from Windows Settings > Installed Apps).
           files: |

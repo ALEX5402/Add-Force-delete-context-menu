@@ -6,9 +6,9 @@
     This script:
     1. REMOVES any old "Force_Delete" context menu entries from the previous version
     2. Installs a clean "Force Delete" context menu entry for files AND folders
-    3. Works on Windows 10 and Windows 11 (appears in classic / "Show more options" menu)
-    4. Optionally enables the classic context menu on Windows 11 so the entry appears
-       directly on right-click without needing "Show more options"
+    3. Works on Windows 10 and Windows 11 (single or multiple selection)
+    4. On Windows 11, shows a choice: classic menu (Force Delete appears
+       directly on right-click) or the modern menu (under "Show more options")
 
     Must be run as Administrator.
 #>
@@ -119,9 +119,13 @@ $escapedScript = $forceDeleteScript.Replace('\', '\\')
 $q = [char]34
 $slashQ = '\' + $q
 
-# The command to invoke from the context menu (with properly quoted paths for files with spaces):
-# powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\path\force_delete.ps1" "%1"
-$regCommandLine = '@=' + $q + 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ' + $slashQ + $escapedScript + $slashQ + ' ' + $slashQ + '%1' + $slashQ + $q
+# The command to invoke from the context menu. "%1" passes the clicked item
+# (always expanded by Explorer) and %* passes ALL selected files/folders for
+# multi-select. If %* expands to nothing, "%1" alone still delivers the item,
+# so the script never falls into its "no path" picker. Duplicates are removed
+# inside force_delete.ps1:
+# powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\path\force_delete.ps1" "%1" %*
+$regCommandLine = '@=' + $q + 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ' + $slashQ + $escapedScript + $slashQ + ' ' + $slashQ + '%1' + $slashQ + ' %*' + $q
 
 # Windows Settings > Installed Apps entry, pointing at the .bat uninstaller (same folder)
 $uninstallScript = Join-Path $scriptDir "uninstall.ps1"
@@ -135,6 +139,7 @@ $regLines = @(
     '[HKEY_LOCAL_MACHINE\Software\Classes\*\shell\ForceDelete]',
     ('@=' + $q + 'Force Delete' + $q),
     ($q + 'HasLUAShield' + $q + '=' + $q + $q),
+    ($q + 'MultiSelectModel' + $q + '=' + $q + 'Player' + $q),
     ($q + 'NoWorkingDirectory' + $q + '=' + $q + $q),
     ($q + 'NeverDefault' + $q + '=' + $q + $q),
     ($q + 'Position' + $q + '=' + $q + 'bottom' + $q),
@@ -145,6 +150,7 @@ $regLines = @(
     '[HKEY_LOCAL_MACHINE\Software\Classes\Directory\shell\ForceDelete]',
     ('@=' + $q + 'Force Delete' + $q),
     ($q + 'HasLUAShield' + $q + '=' + $q + $q),
+    ($q + 'MultiSelectModel' + $q + '=' + $q + 'Player' + $q),
     ($q + 'NoWorkingDirectory' + $q + '=' + $q + $q),
     ($q + 'Position' + $q + '=' + $q + 'bottom' + $q),
     '',
@@ -181,29 +187,29 @@ Write-Host "  Added: File & Folder context menu entries" -ForegroundColor Green
 Write-Host ""
 
 # ── Step 4: Windows 11 Context Menu Style (Classic vs Modern) ──
-Write-Host "[4/4] Windows 11 context menu configuration..." -ForegroundColor Yellow
+# The new Windows 11 menu hides Force Delete under "Show more options".
+# Show the choice and apply what the user picks — no automatic checks.
+Write-Host "[4/4] Windows 11 context menu..." -ForegroundColor Yellow
 
-$osVersion = [System.Environment]::OSVersion.Version
-$isWin11 = $osVersion.Build -ge 22000
+# Detect Windows 11 via the registry CurrentBuildNumber. Do NOT use
+# [Environment]::OSVersion here: inside the compiled exe it can report an old
+# pre-Windows-10 version (no supportedOS manifest), which used to make the
+# installer skip this step entirely on Windows 11.
+$windowsBuild = 0
+try {
+    $cv = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop
+    $windowsBuild = [int]$cv.CurrentBuildNumber
+}
+catch {}
+if ($windowsBuild -eq 0) {
+    $windowsBuild = [System.Environment]::OSVersion.Version.Build
+}
+$isWin11 = $windowsBuild -ge 22000
 
 if ($isWin11) {
-    $classicKeyPath = "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"
-    $isCurrentlyClassic = $false
-
-    $prev = $ErrorActionPreference
-    $ErrorActionPreference = "SilentlyContinue"
-    $null = & reg.exe query "$classicKeyPath" 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $isCurrentlyClassic = $true
-    }
-    $ErrorActionPreference = $prev
-
-    $currentStatusText = if ($isCurrentlyClassic) { "Classic (Windows 10 style, all options visible directly)" } else { "Modern (Windows 11 default, 'Show more options' collapsed)" }
-
     Write-Host ""
     Write-Host "  --------------------------------------------------" -ForegroundColor Cyan
-    Write-Host "  Windows 11 Context Menu Style Choice:" -ForegroundColor Cyan
-    Write-Host "  Current style: $currentStatusText" -ForegroundColor White
+    Write-Host "  Windows 11 Context Menu Style:" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  [1] Classic Menu - 'Force Delete' appears directly on right-click" -ForegroundColor Green
     Write-Host "  [2] Modern Menu  - Default Windows 11 look ('Show more options')" -ForegroundColor DarkCyan
@@ -249,23 +255,19 @@ if ($isWin11) {
         Write-Host "  Explorer restarted." -ForegroundColor Green
     }
     else {
-        if ($isCurrentlyClassic) {
-            Remove-RegistryKeySafely -KeyPath "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" | Out-Null
-            Write-Host ""
-            Write-Host "  Reverted to Windows 11 modern context menu." -ForegroundColor Green
+        $removedClassic = Remove-RegistryKeySafely -KeyPath "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}"
+        Write-Host ""
+        Write-Host "  Keeping Windows 11 modern menu ('Force Delete' under 'Show more options')." -ForegroundColor Cyan
+        if ($removedClassic) {
             Write-Host "  Restarting Explorer to apply changes..." -ForegroundColor Yellow
             & cmd.exe /c "taskkill /f /im explorer.exe >nul 2>&1 & start explorer.exe"
             Start-Sleep -Seconds 1
             Write-Host "  Explorer restarted." -ForegroundColor Green
         }
-        else {
-            Write-Host ""
-            Write-Host "  Keeping Windows 11 modern menu ('Force Delete' under 'Show more options')." -ForegroundColor Cyan
-        }
     }
 }
 else {
-    Write-Host "  Windows 10 or earlier detected. Full context menu is always available natively." -ForegroundColor Green
+    Write-Host "  Windows 10 or earlier detected (build $windowsBuild). Full context menu is always available natively." -ForegroundColor Green
 }
 
 Write-Host ""

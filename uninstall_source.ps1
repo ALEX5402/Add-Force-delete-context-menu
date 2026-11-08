@@ -169,6 +169,20 @@ if ($classicKeyExists) {
     $ans = Read-Host "  Select option [1 or 2] (Default is 1)"
     if ([string]::IsNullOrWhiteSpace($ans) -or $ans.Trim() -eq "1" -or $ans.Trim() -match '^(?i)y') {
         Remove-RegistryKeySafely -KeyPath $classicKeyPath | Out-Null
+        # The installer applies classic to every loaded user account — revert those too.
+        $prev = $ErrorActionPreference
+        $ErrorActionPreference = "SilentlyContinue"
+        try {
+            $userSids = Get-ChildItem 'Registry::HKEY_USERS' -ErrorAction SilentlyContinue |
+                Where-Object { $_.PSChildName -match '^S-1-5-21-' } |
+                Select-Object -ExpandProperty PSChildName
+            foreach ($sid in $userSids) {
+                Remove-RegistryKeySafely -KeyPath "HKU\$sid\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}" | Out-Null
+            }
+        }
+        finally {
+            $ErrorActionPreference = $prev
+        }
         Write-Host ""
         Write-Host "  Reverted to Windows 11 modern context menu." -ForegroundColor Green
 

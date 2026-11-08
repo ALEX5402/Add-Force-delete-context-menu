@@ -6,4 +6,5 @@ Thumbs.db
 .idea/
 inspiration/
 .exe
-
+/dist
+dist/*

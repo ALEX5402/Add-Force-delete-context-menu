@@ -15,6 +15,7 @@ Adds a **Force Delete** option to the Windows right-click context menu that can 
 - **Automatic lock termination** — finds locking processes via Restart Manager and kills them immediately
 - **Nuclear permission reset** — takes ownership and grants full control to Everyone, Administrators, and User
 - **Extended Path (`\\?\`) support** — deletes paths exceeding 260 characters or reserved Windows names
+- **Multiple selection support** — select several files and/or folders at once (Ctrl+click) and Force Delete them all in one go with a single confirmation
 - **Single confirmation prompt** — confirms once, then deletes immediately without secondary prompts
 - **Windows 11 support** — option to enable classic context menu so the entry appears directly
 - **Clean install/uninstall** — removes old broken entries from previous versions
@@ -23,14 +24,17 @@ Adds a **Force Delete** option to the Windows right-click context menu that can 
 ## Installation & Usage
 
 ### Option 1: All-in-One Single Executable (Recommended)
-- Download **`ForceDelete-Setup.exe`** from the latest release.
-- Double-click to install. It is a completely self-contained single executable — `force_delete.ps1`, `uninstall.reg`, `clean_old_entries.reg` and `Uninstall-ForceDelete.exe` are all embedded inside it, so you don't need to download anything else. It deploys those files to `C:\Program Files\ForceDelete` and sets up the context menu with the UAC shield, exactly like `Install_Add-Force-context-menu.bat` does.
-- To uninstall, run **`Uninstall-ForceDelete.exe`** (also deployed to `C:\Program Files\ForceDelete` by the installer, or uninstall from Windows Settings > Installed Apps). It is likewise self-contained — the registry cleanup files are embedded inside it.
+1. Go to the [latest release](https://github.com/ALEX5402/Add-Force-delete-context-menu/releases/latest) on GitHub.
+2. Download **`ForceDelete-Setup.exe`** — that's the only file you need. It is a completely self-contained single executable: `force_delete.ps1`, `uninstall.reg`, `clean_old_entries.reg` and `Uninstall-ForceDelete.exe` are all embedded inside it, so do **not** download the `.ps1`, `.reg`, or `.bat` files separately. (Ignore/delete any old `ForceDelete-x64.exe` you may have from an old release — that was the old deleter, not the installer.)
+3. Double-click **`ForceDelete-Setup.exe`** (or right-click → **Run as administrator**) and approve the UAC prompt.
+4. On Windows 11, the installer asks you to pick the context menu style: `[1]` Classic (Force Delete appears directly on right-click) or `[2]` Modern (default look, under "Show more options"). Explorer restarts once so your choice takes effect immediately.
+5. Wait for **Installation Complete**, press Enter to exit, then right-click any file or folder and click **Force Delete** — the installer deploys everything to `C:\Program Files\ForceDelete` and sets up the context menu with the UAC shield, exactly like `Install_Add-Force-context-menu.bat` does.
+6. To uninstall later, run **`Uninstall-ForceDelete.exe`** from `C:\Program Files\ForceDelete` (the installer puts it there for you), or uninstall from Windows Settings > Installed Apps. It is likewise self-contained — the registry cleanup files are embedded inside it.
 
 ### Option 2: Script / Portable Mode (From Source)
 1. **Install**:
    - Double-click **`Install_Add-Force-context-menu.bat`** (it will request Administrator permissions).
-   - Follow the prompt to choose your context menu style (Classic or Modern).
+   - On Windows 11, pick `[1]` Classic (Force Delete appears directly on right-click) or `[2]` Modern (under "Show more options").
    - The **Force Delete** option with the Windows Security UAC Shield will be added immediately.
 
 2. **Uninstall**:
@@ -51,7 +55,7 @@ An automated GitHub Actions workflow (`.github/workflows/release.yml`) builds an
 
 ## Windows 11 Note
 
-On Windows 11, custom context menu entries appear under **"Show more options"** by default. During installation, you will be asked if you want to enable the classic full context menu, which makes "Force Delete" appear directly on right-click.
+On Windows 11, custom context menu entries appear under **"Show more options"** by default, which would hide Force Delete. During installation the installer asks you to choose: `[1]` Classic (Force Delete appears directly on right-click) or `[2]` Modern (default look). Explorer is restarted once to apply your choice.
 
 You can revert this change at any time using the uninstall script.
 

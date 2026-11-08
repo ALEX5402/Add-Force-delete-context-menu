@@ -16,7 +16,7 @@
     deleter compiled standalone (double-clicking one shows the deleter's
     file/folder picker GUI, not the installer). The context menu entry
     installed by the .bat scripts points at
-    powershell.exe -File "force_delete.ps1" "%1", so the installer
+    powershell.exe -File "force_delete.ps1" "%1" %*, so the installer
     registers exactly that — no compiled deleter binary is needed.
 #>
 
@@ -35,7 +35,12 @@ Write-Host ""
 $dist = Join-Path $root "dist"
 if (Test-Path $dist) {
     Write-Host "Cleaning dist folder..." -ForegroundColor DarkGray
-    Remove-Item -Path $dist -Recurse -Force
+    try {
+        Remove-Item -Path $dist -Recurse -Force -ErrorAction Stop
+    }
+    catch {
+        throw "Could not clean the dist folder. Close any running ForceDelete-Setup.exe / Uninstall-ForceDelete.exe window first, then run build.ps1 again. ($($_.Exception.Message))"
+    }
 }
 New-Item -ItemType Directory -Path $dist | Out-Null
 Write-Host "Created dist directory: $dist" -ForegroundColor Green
