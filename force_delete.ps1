@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Force Delete - Forcefully and INSTANTLY deletes any file or folder.
 
