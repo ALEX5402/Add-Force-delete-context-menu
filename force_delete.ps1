@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Force Delete - Forcefully and INSTANTLY deletes any file or folder.
 
@@ -17,8 +17,8 @@
 #>
 
 param(
-    [Parameter(Mandatory = $true, Position = 0)]
-    [string]$Path
+    [Parameter(Mandatory = $false, Position = 0)]
+    [string]$Path = ""
 )
 
 # ── Load Windows Forms for dialogs ──
@@ -30,9 +30,21 @@ $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIde
 )
 
 if (-not $isAdmin) {
-    $scriptPath = $MyInvocation.MyCommand.Definition
+    $currentExe = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+    $isCompiledExe = $currentExe -and $currentExe.EndsWith(".exe", [System.StringComparison]::OrdinalIgnoreCase) -and 
+        -not $currentExe.EndsWith("powershell.exe", [System.StringComparison]::OrdinalIgnoreCase) -and 
+        -not $currentExe.EndsWith("pwsh.exe", [System.StringComparison]::OrdinalIgnoreCase)
+
     try {
-        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" `"$Path`"" -Verb RunAs
+        if ($isCompiledExe) {
+            $argList = if ($Path) { "`"$Path`"" } else { "" }
+            Start-Process $currentExe -ArgumentList $argList -Verb RunAs
+        }
+        else {
+            $scriptPath = if ($MyInvocation.MyCommand.Definition) { $MyInvocation.MyCommand.Definition } else { $PSCommandPath }
+            $argList = if ($Path) { "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" `"$Path`"" } else { "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" }
+            Start-Process powershell.exe -ArgumentList $argList -Verb RunAs
+        }
     }
     catch {
         [System.Windows.Forms.MessageBox]::Show(
@@ -145,6 +157,43 @@ public static class FileUnlocker
 "@ -ErrorAction SilentlyContinue
 
 # ── Validate and resolve path ──
+if ([string]::IsNullOrWhiteSpace($Path)) {
+    # No path supplied (e.g. user double-clicked the executable) - prompt to select a file or folder
+    $targetChoice = [System.Windows.Forms.MessageBox]::Show(
+        "Force Delete`n`nWould you like to select a File or a Folder to delete?`n`n• Click [Yes] to choose a FILE`n• Click [No] to choose a FOLDER`n• Click [Cancel] to exit",
+        "Force Delete - Select Target",
+        [System.Windows.Forms.MessageBoxButtons]::YesNoCancel,
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+
+    if ($targetChoice -eq [System.Windows.Forms.DialogResult]::Yes) {
+        $fileDlg = New-Object System.Windows.Forms.OpenFileDialog
+        $fileDlg.Title = "Select File to Force Delete"
+        $fileDlg.Filter = "All Files (*.*)|*.*"
+        $fileDlg.CheckFileExists = $true
+        if ($fileDlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $Path = $fileDlg.FileName
+        }
+        else {
+            exit 0
+        }
+    }
+    elseif ($targetChoice -eq [System.Windows.Forms.DialogResult]::No) {
+        $folderDlg = New-Object System.Windows.Forms.FolderBrowserDialog
+        $folderDlg.Description = "Select Folder to Force Delete"
+        $folderDlg.ShowNewFolderButton = $false
+        if ($folderDlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+            $Path = $folderDlg.SelectedPath
+        }
+        else {
+            exit 0
+        }
+    }
+    else {
+        exit 0
+    }
+}
+
 $resolved = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
 
 if (-not (Test-Path -LiteralPath $resolved)) {
