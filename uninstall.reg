@@ -1,0 +1,23 @@
+Windows Registry Editor Version 5.00
+
+; =========================================================
+; Force Delete - Complete Cleanup
+; Removes both old and new Force Delete context menu entries
+; =========================================================
+
+; Remove new entries
+[-HKEY_CLASSES_ROOT\*\shell\ForceDelete]
+[-HKEY_CLASSES_ROOT\Directory\shell\ForceDelete]
+[-HKEY_LOCAL_MACHINE\Software\Classes\*\shell\ForceDelete]
+[-HKEY_LOCAL_MACHINE\Software\Classes\Directory\shell\ForceDelete]
+[-HKEY_CURRENT_USER\Software\Classes\*\shell\ForceDelete]
+[-HKEY_CURRENT_USER\Software\Classes\Directory\shell\ForceDelete]
+
+; Remove old entries
+[-HKEY_CLASSES_ROOT\*\shell\Force_Delete]
+[-HKEY_CLASSES_ROOT\Directory\shell\Force_Delete]
+[-HKEY_LOCAL_MACHINE\Software\Classes\*\shell\Force_Delete]
+[-HKEY_LOCAL_MACHINE\Software\Classes\Directory\shell\Force_Delete]
+[-HKEY_CURRENT_USER\Software\Classes\*\shell\Force_Delete]
+[-HKEY_CURRENT_USER\Software\Classes\Directory\shell\Force_Delete]
+

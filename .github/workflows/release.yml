@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Executables & Create Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 1: Generate date-based version and unique tag name
+      - name: Generate Release Version & Tag
+        id: get_version
+        shell: pwsh
+        run: |
+          $dateVersion = (Get-Date).ToString("yyyy.MM.dd")
+          $tagName = "v${dateVersion}-build${{ github.run_number }}"
+          "version=${dateVersion}" >> $env:GITHUB_OUTPUT
+          "tag_name=${tagName}" >> $env:GITHUB_OUTPUT
+          Write-Host "Generated Version: $dateVersion"
+          Write-Host "Generated Tag: $tagName"
+
+      # Step 2: Build all executables using PS2EXE (x64, x86, arm64, installer, uninstaller)
+      - name: Build Executables with PS2EXE
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+          .\build.ps1
+
+      # Step 3: Verify dist directory contents
+      - name: Verify Built Assets
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path .\dist | Format-Table -AutoSize Name, Length
+
+      # Step 4: Create GitHub Release and Upload Assets
+      - name: Create Release
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          name: Force Delete v${{ steps.get_version.outputs.version }} (build ${{ github.run_number }})
+          body: |
+            ## Force Delete - Release v${{ steps.get_version.outputs.version }} (Build ${{ github.run_number }})
+
+            Windows context menu utility that forcefully and instantly deletes locked, in-use, or undeletable files and folders. Includes the native Windows UAC security shield icon.
+
+            ### Included Executables:
+            - **`Install-ForceDelete.exe`** - Single standalone installer. Run as Administrator to install to Program Files and configure context menu with security shield.
+            - **`Uninstall-ForceDelete.exe`** - Single standalone uninstaller. Run to remove context menu entries and clean up files.
+            - **`ForceDelete-x64.exe`** - Standalone 64-bit binary for manual CLI or portable use.
+            - **`ForceDelete-x86.exe`** - Standalone 32-bit binary for 32-bit Windows systems.
+            - **`ForceDelete-arm64.exe`** - Standalone ARM64 binary for Windows on ARM (Copilot+ PCs, Surface Pro X, etc.).
+            - **`ForceDelete-Source-Scripts.zip`** - Full portable script bundle (.bat and .ps1).
+
+            ### Quick Start:
+            1. Download **`Install-ForceDelete.exe`**.
+            2. Run it as Administrator and choose your Windows 11 context menu style (Classic or Modern).
+            3. Right-click any file or folder and click **Force Delete**!
+          files: |
+            dist/Install-ForceDelete.exe
+            dist/Uninstall-ForceDelete.exe
+            dist/ForceDelete-x64.exe
+            dist/ForceDelete-x86.exe
+            dist/ForceDelete-arm64.exe
+            dist/ForceDelete-Source-Scripts.zip

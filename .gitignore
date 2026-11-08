@@ -1,0 +1,9 @@
+dist/
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+inspiration/
+.exe
+

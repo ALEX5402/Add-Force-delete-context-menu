@@ -1,0 +1,14 @@
+Windows Registry Editor Version 5.00
+
+; =========================================================
+; Force Delete - Remove Old Broken Context Menu Entries
+; Double-click this file and click "Yes" to remove old entries
+; =========================================================
+
+[-HKEY_LOCAL_MACHINE\Software\Classes\*\shell\Force_Delete]
+[-HKEY_LOCAL_MACHINE\Software\Classes\Directory\shell\Force_Delete]
+[-HKEY_CURRENT_USER\Software\Classes\*\shell\Force_Delete]
+[-HKEY_CURRENT_USER\Software\Classes\Directory\shell\Force_Delete]
+[-HKEY_CLASSES_ROOT\*\shell\Force_Delete]
+[-HKEY_CLASSES_ROOT\Directory\shell\Force_Delete]
+
