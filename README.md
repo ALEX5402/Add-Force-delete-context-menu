@@ -22,10 +22,10 @@ Adds a **Force Delete** option to the Windows right-click context menu that can 
 
 ## Installation & Usage
 
-### Option 1: Standalone Single Executable (From GitHub Releases)
-- Download **`Install-ForceDelete.exe`** from the latest release.
-- Double-click to install (it will automatically configure the context menu and UAC shield).
-- To remove, run **`Uninstall-ForceDelete.exe`**.
+### Option 1: All-in-One Single Executable (Recommended)
+- Download **`ForceDelete-Setup.exe`** from the latest release.
+- Double-click to install. It is a completely self-contained single executable that automatically detects your architecture (`x64`, `ARM64`, or `x86`), deploys the native binary to `C:\Program Files\ForceDelete`, and sets up the context menu with the UAC shield.
+- To uninstall, run **`Uninstall-ForceDelete.exe`** (or uninstall from Windows Settings > Installed Apps).
 
 ### Option 2: Script / Portable Mode (From Source)
 1. **Install**:
@@ -44,12 +44,12 @@ To build the standalone `.exe` packages locally:
 .\build.ps1
 ```
 This generates the following files in the `dist/` directory:
-- `Install-ForceDelete.exe` (Single-file self-contained installer)
-- `Uninstall-ForceDelete.exe` (Single-file self-contained uninstaller)
+- `ForceDelete-Setup.exe` (All-in-one single-file installer bundling all binaries and tools)
+- `ForceDelete-Package.zip` (Complete archive of all executables and scripts)
 - `ForceDelete-x64.exe` (Standalone 64-bit binary)
 - `ForceDelete-x86.exe` (Standalone 32-bit binary)
 - `ForceDelete-arm64.exe` (Standalone ARM64 binary)
-- `ForceDelete-Source-Scripts.zip` (Source / script archive)
+- `Uninstall-ForceDelete.exe` (Single-file self-contained uninstaller)
 
 An automated GitHub Actions workflow (`.github/workflows/release.yml`) builds and releases these assets automatically on every push or manual trigger.
 

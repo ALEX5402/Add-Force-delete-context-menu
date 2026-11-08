@@ -57,22 +57,24 @@ jobs:
 
             Windows context menu utility that forcefully and instantly deletes locked, in-use, or undeletable files and folders. Includes the native Windows UAC security shield icon.
 
-            ### Included Executables:
-            - **`Install-ForceDelete.exe`** - Single standalone installer. Run as Administrator to install to Program Files and configure context menu with security shield.
-            - **`Uninstall-ForceDelete.exe`** - Single standalone uninstaller. Run to remove context menu entries and clean up files.
-            - **`ForceDelete-x64.exe`** - Standalone 64-bit binary for manual CLI or portable use.
-            - **`ForceDelete-x86.exe`** - Standalone 32-bit binary for 32-bit Windows systems.
+            ### All-in-One Single Executable (Recommended):
+            - **`ForceDelete-Setup.exe`** - Single self-contained executable containing all architecture binaries (x64, x86, ARM64), the uninstaller, and supporting tools. Automatically detects your system architecture, installs to Program Files, and registers the context menu with the security shield icon.
+
+            ### Portable / Standalone Assets:
+            - **`ForceDelete-Package.zip`** - Complete archive containing all compiled executables, scripts, and registry files.
+            - **`ForceDelete-x64.exe`** - Standalone 64-bit binary for manual CLI / portable use.
             - **`ForceDelete-arm64.exe`** - Standalone ARM64 binary for Windows on ARM (Copilot+ PCs, Surface Pro X, etc.).
-            - **`ForceDelete-Source-Scripts.zip`** - Full portable script bundle (.bat and .ps1).
+            - **`ForceDelete-x86.exe`** - Standalone 32-bit binary for 32-bit Windows systems.
+            - **`Uninstall-ForceDelete.exe`** - Standalone uninstaller.
 
             ### Quick Start:
-            1. Download **`Install-ForceDelete.exe`**.
-            2. Run it as Administrator and choose your Windows 11 context menu style (Classic or Modern).
+            1. Download and run **`ForceDelete-Setup.exe`** as Administrator.
+            2. Choose your Windows 11 context menu style (Classic or Modern).
             3. Right-click any file or folder and click **Force Delete**!
           files: |
-            dist/Install-ForceDelete.exe
-            dist/Uninstall-ForceDelete.exe
+            dist/ForceDelete-Setup.exe
+            dist/ForceDelete-Package.zip
             dist/ForceDelete-x64.exe
-            dist/ForceDelete-x86.exe
             dist/ForceDelete-arm64.exe
-            dist/ForceDelete-Source-Scripts.zip
+            dist/ForceDelete-x86.exe
+            dist/Uninstall-ForceDelete.exe
